@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "thesislogic"
-version = "0.1.0"
+version = "0.2.0"
 description = "Open-source, proof-gated legal AI workbench for law firms. Local or cloud AI, any jurisdiction, any practice."
 readme = "README.md"
 license = { text = "Apache-2.0" }

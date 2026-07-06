@@ -87,9 +87,27 @@ select{background:var(--panel2);color:var(--text);border:1px solid var(--line);b
   <div class="right">
     <span id="h-matter"></span><span id="h-user"></span>
     <span id="h-ai" class="badge">AI: …</span>
+    <button class="ghost" style="padding:4px 10px" onclick="openPw()">Password</button>
     <button class="ghost" style="padding:4px 10px" onclick="logout()">Sign out</button>
   </div>
 </header>
+
+<div id="pwmodal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:20;align-items:center;justify-content:center">
+  <div style="background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:24px;width:340px">
+    <h3 style="margin:0 0 12px;font-size:1rem;color:var(--text);text-transform:none;letter-spacing:0">Change password</h3>
+    <input id="pw-cur" type="password" placeholder="current password" autocomplete="current-password"
+           style="width:100%;margin:5px 0;background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:8px;padding:9px 12px">
+    <input id="pw-new" type="password" placeholder="new password (min 10 chars)" autocomplete="new-password"
+           style="width:100%;margin:5px 0;background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:8px;padding:9px 12px">
+    <input id="pw-new2" type="password" placeholder="repeat new password" autocomplete="new-password"
+           style="width:100%;margin:5px 0;background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:8px;padding:9px 12px">
+    <div style="display:flex;gap:8px;margin-top:12px">
+      <button class="primary" style="flex:1;padding:9px" onclick="submitPw()">Change</button>
+      <button class="ghost" style="flex:1" onclick="closePw()">Cancel</button>
+    </div>
+    <div class="err" id="pw-err" style="color:var(--bad);font-size:.8rem;min-height:1.2em;margin-top:8px"></div>
+  </div>
+</div>
 
 <main>
   <nav class="rail">
@@ -175,6 +193,19 @@ async function doLogin(){
 }
 function logout(){ sessionStorage.removeItem('tl_token'); location.reload(); }
 
+function openPw(){ $('#pwmodal').style.display='flex'; $('#pw-err').textContent=''; }
+function closePw(){ $('#pwmodal').style.display='none';
+  ['#pw-cur','#pw-new','#pw-new2'].forEach(s=>$(s).value=''); }
+async function submitPw(){
+  $('#pw-err').textContent='';
+  if($('#pw-new').value !== $('#pw-new2').value){ $('#pw-err').textContent='new passwords do not match'; return; }
+  try{
+    await api('/auth/password',{method:'POST',body:JSON.stringify(
+      {current_password:$('#pw-cur').value,new_password:$('#pw-new').value})});
+    closePw(); addMsg('assistant','Password changed. Other active sessions for your account were signed out.');
+  }catch(e){ $('#pw-err').textContent=e.message; }
+}
+
 document.querySelectorAll('.mode').forEach(b=>b.onclick=()=>{
   document.querySelectorAll('.mode').forEach(x=>x.classList.remove('active'));
   b.classList.add('active'); mode=b.dataset.mode;
@@ -251,13 +282,30 @@ function addMsg(role, text, meta){
     if(st==='downgraded_to_deterministic') badges.push('<span class="badge down">live output downgraded: unverified citations</span>');
     if(st==='backend_unavailable') badges.push('<span class="badge fail">model backend unavailable</span>');
     if(meta.generation?.model) badges.push(`<span class="badge">${meta.generation.provider}/${meta.generation.model}</span>`);
+    badges.push('<span class="badge" style="cursor:pointer" data-export>⬇ export .md</span>');
     div.innerHTML = '<div class="badges">'+badges.join('')+'</div>';
+    div.querySelector('[data-export]').onclick = ()=>exportMd(text, meta);
   }
   const body = document.createElement('div');
   body.textContent = text;
   div.appendChild(body);
   $('#thread').appendChild(div);
   $('#thread').scrollTop = $('#thread').scrollHeight;
+}
+
+function exportMd(text, meta){
+  const g = meta.generation||{};
+  const header = [
+    '<!-- ThesisLogic export -->',
+    `<!-- request: ${meta.request_id||'n/a'} | workflow: ${meta.workflow||''} | mode: ${meta.mode} `+
+    `| provider: ${g.provider||'none'} | model: ${g.model||'-'} | proof: ${meta.proof?.passed ?? 'n/a'} -->`,
+    `<!-- ${meta.notice||''} -->`, '', ''
+  ].join('\n');
+  const blob = new Blob([header+text], {type:'text/markdown'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `thesislogic-${meta.workflow||'result'}-${(meta.request_id||'x').slice(0,8)}.md`;
+  a.click(); URL.revokeObjectURL(a.href);
 }
 
 function renderProvenance(j){

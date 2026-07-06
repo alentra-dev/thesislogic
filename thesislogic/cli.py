@@ -123,6 +123,21 @@ def cmd_user_add(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_user_passwd(args: argparse.Namespace) -> int:
+    from .auth import AuthError, admin_reset_password
+    from .db import app_db
+    settings = get_settings()
+    settings.ensure_dirs()
+    password = args.password or getpass.getpass("new password (min 10 chars): ")
+    try:
+        admin_reset_password(app_db(settings.data_dir), args.user_id, password)
+    except AuthError as exc:
+        print(f"error: {exc}")
+        return 1
+    print(f"password reset for {args.user_id}; all their sessions were revoked")
+    return 0
+
+
 def cmd_doctor(_: argparse.Namespace) -> int:
     from .ingestion import ocr_readiness
     from .packs import list_packs
@@ -185,6 +200,11 @@ def main(argv: list[str] | None = None) -> int:
     p_add.add_argument("--role", default="attorney", choices=["attorney", "admin"])
     p_add.add_argument("--password", default="")
     p_add.set_defaults(func=cmd_user_add)
+
+    p_passwd = user_sub.add_parser("passwd", help="reset a user's password (server-side admin)")
+    p_passwd.add_argument("user_id")
+    p_passwd.add_argument("--password", default="")
+    p_passwd.set_defaults(func=cmd_user_passwd)
 
     p_doctor = sub.add_parser("doctor", help="environment and provider checks")
     p_doctor.set_defaults(func=cmd_doctor)

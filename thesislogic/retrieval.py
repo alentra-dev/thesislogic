@@ -22,10 +22,17 @@ from .packs import Pack, normalize_citation
 from .providers.base import EmbeddingProvider
 
 _WORD = re.compile(r"[A-Za-z][A-Za-z0-9'\-]+")
+_DOCTRINAL = re.compile(
+    r"\b(when (?:does|may|must|is|can)|what does the (?:law|statute)|allow(?:s|ed)?|"
+    r"require(?:s|d)?|is it (?:legal|permitted)|under what circumstances)\b", re.I)
 _STOPWORDS = {
     "the", "and", "for", "with", "that", "this", "are", "was", "were", "what",
     "when", "where", "who", "how", "does", "can", "under", "about", "law",
     "legal", "case", "cases", "any", "all", "not", "may", "must", "shall",
+    "than", "then", "instead", "also", "only", "such", "more", "most", "they",
+    "them", "their", "there", "these", "those", "will", "would", "could",
+    "should", "upon", "into", "from", "have", "has", "had", "been", "being",
+    "which", "whether", "other", "each", "between", "because", "after", "before",
 }
 
 
@@ -73,7 +80,7 @@ def _fts_query(question: str) -> str:
     for t in tokens:
         if t not in seen:
             seen.append(t)
-    return " OR ".join(f'"{t}"' for t in seen[:12])
+    return " OR ".join(f'"{t}"' for t in seen[:16])
 
 
 def _cosine(a: list[float], b: list[float]) -> float:
@@ -99,6 +106,14 @@ class Retriever:
                 seen.add(norm)
                 row = db.execute(
                     "SELECT * FROM authorities WHERE normalized_citation = ?", (norm,)).fetchone()
+                if row is None:
+                    # Prefix-tolerant fallback: "§ 452.340" must find "RSMo 452.340".
+                    core = re.sub(r"^[^\d]+", "", norm).strip()
+                    if len(core) >= 5:
+                        row = db.execute(
+                            "SELECT * FROM authorities WHERE normalized_citation LIKE ? "
+                            "ORDER BY length(normalized_citation) LIMIT 1",
+                            (f"%{core}",)).fetchone()
                 if row:
                     found.append(_row_to_authority(row, "exact_citation", 100.0))
         return found
@@ -119,12 +134,26 @@ class Retriever:
         query = _fts_query(question)
         if not query:
             return []
+        # Field-weighted BM25: a hit in the citation or title (which for
+        # statutes usually states the doctrine) outranks body term frequency,
+        # so a short on-point section beats a long opinion that merely repeats
+        # the query vocabulary. Column order: authority_id, citation, title,
+        # aliases, topics, body.
         rows = db.execute(
-            "SELECT a.*, bm25(authorities_fts) AS rank FROM authorities_fts f "
+            "SELECT a.*, bm25(authorities_fts, 0.0, 12.0, 10.0, 6.0, 4.0, 1.0) AS rank "
+            "FROM authorities_fts f "
             "JOIN authorities a ON a.authority_id = f.authority_id "
             "WHERE authorities_fts MATCH ? ORDER BY rank LIMIT ?",
             (query, limit)).fetchall()
-        return [_row_to_authority(r, "lexical_bm25", -r["rank"]) for r in rows]
+        doctrinal = _DOCTRINAL.search(question) is not None
+        out = []
+        for r in rows:
+            score = -r["rank"]
+            if doctrinal and r["authority_type"] in ("statute", "rule", "regulation"):
+                score *= 1.3  # primary written law first for "when/what does the law" questions
+            out.append(_row_to_authority(r, "lexical_bm25", score))
+        out.sort(key=lambda a: -a["score"])
+        return out
 
     def _semantic_search(self, db: sqlite3.Connection, question: str, limit: int) -> list[dict]:
         if self.embedder is None:

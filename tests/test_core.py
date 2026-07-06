@@ -195,3 +195,66 @@ def test_proofgate_accepts_span_grounded_citation(pack):
     proof = proofgate.validate(answer, evidence, pack)
     assert proof.passed, proof.warnings
     assert any("88.01" in c for c in proof.verified_citations)
+
+
+def test_full_text_indexing_finds_deep_statute_language(tmp_path: Path):
+    """Operative language buried past 4000 chars must still be searchable."""
+    packs_dir = tmp_path / "packs"
+    packs_dir.mkdir()
+    scaffold_pack(packs_dir, "deep", "Deep", "Deep State")
+    filler = "This subsection addresses administrative matters of no relevance. " * 80
+    assert len(filler) > 4500
+    record = {"authority_type": "statute", "citation": "RSMo 452.340",
+              "title": "Child support — payments may be made directly to child, when",
+              "jurisdiction": "Deep State", "year": 2020, "aliases": [], "topic_labels": [],
+              "text": filler + " The court may order that payments be made directly to the "
+                               "child if the child is enrolled in an institution of higher education."}
+    (packs_dir / "deep" / "authorities.ndjson").write_text(json.dumps(record) + "\n")
+    p = load_pack(packs_dir, "deep")
+    build_index(p, progress_every=0)
+    ev = Retriever(p).retrieve("when may payments be made directly to the child enrolled in higher education")
+    assert any("452.340" in a["citation"] for a in ev.authorities)
+
+
+def test_exact_lookup_prefix_fallback(pack):
+    """'section 452.330' must find the record stored as '§ 452.330'."""
+    ev = Retriever(pack).retrieve("What does section 452.330 say?")
+    hits = [(a["citation"], a["match_basis"]) for a in ev.authorities]
+    assert ("§ 452.330", "exact_citation") in hits, hits
+
+
+def test_title_weighting_beats_body_frequency(tmp_path: Path):
+    packs_dir = tmp_path / "packs"
+    packs_dir.mkdir()
+    scaffold_pack(packs_dir, "weight", "Weight", "Weight State")
+    records = [
+        {"authority_type": "case", "citation": "1 W.S. 1", "title": "Noise v. Noise",
+         "jurisdiction": "Weight State", "year": 2000, "aliases": [], "topic_labels": [],
+         "text": ("The garnishment procedure was discussed. " * 60)},
+        {"authority_type": "statute", "citation": "WS 100.1",
+         "title": "Garnishment procedure — exemptions",
+         "jurisdiction": "Weight State", "year": 2020, "aliases": [], "topic_labels": [],
+         "text": "A garnishment shall not attach to exempt wages."},
+    ]
+    (packs_dir / "weight" / "authorities.ndjson").write_text(
+        "\n".join(json.dumps(r) for r in records))
+    p = load_pack(packs_dir, "weight")
+    build_index(p, progress_every=0)
+    ev = Retriever(p).retrieve("When does the law allow garnishment exemptions?")
+    assert ev.authorities[0]["citation"] == "WS 100.1", [a["citation"] for a in ev.authorities]
+
+
+def test_password_change_and_admin_reset(tmp_path: Path):
+    db = app_db(tmp_path)
+    auth.register_user(db, "bob", "original-password-1", "Bob")
+    s1 = auth.create_session(db, "bob", "original-password-1", "m1", 3600, 3, 60)
+    s2 = auth.create_session(db, "bob", "original-password-1", "m2", 3600, 3, 60)
+    with pytest.raises(auth.AuthError):
+        auth.change_password(db, "bob", "wrong-current", "new-password-123", s1["token"])
+    auth.change_password(db, "bob", "original-password-1", "new-password-123", s1["token"])
+    assert auth.resolve_session(db, s1["token"])["user_id"] == "bob"  # caller survives
+    with pytest.raises(auth.AuthError):
+        auth.resolve_session(db, s2["token"])  # other sessions revoked
+    auth.create_session(db, "bob", "new-password-123", "m1", 3600, 3, 60)
+    auth.admin_reset_password(db, "bob", "admin-set-password-9")
+    auth.create_session(db, "bob", "admin-set-password-9", "m1", 3600, 3, 60)

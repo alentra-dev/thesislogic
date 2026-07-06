@@ -56,7 +56,7 @@ CREATE TABLE IF NOT EXISTS authorities (
 CREATE INDEX IF NOT EXISTS idx_auth_norm ON authorities (normalized_citation);
 
 CREATE VIRTUAL TABLE IF NOT EXISTS authorities_fts USING fts5(
-    authority_id UNINDEXED, search_text
+    authority_id UNINDEXED, citation, title, aliases, topics, body
 );
 
 CREATE TABLE IF NOT EXISTS spans (
@@ -253,7 +253,6 @@ def build_index(pack: Pack, source: Path | None = None, limit: int | None = None
             aliases = record.get("aliases") or []
             topics = record.get("topic_labels") or []
             year = record.get("year")
-            search_text = " ".join(filter(None, [citation, title, " ".join(aliases), " ".join(topics), text[:4000]]))
             db.execute(
                 "INSERT OR REPLACE INTO authorities (authority_id, authority_type, citation, "
                 "normalized_citation, title, court, jurisdiction, year, aliases_json, "
@@ -264,8 +263,14 @@ def build_index(pack: Pack, source: Path | None = None, limit: int | None = None
                  int(year) if year not in (None, "", "None") else None,
                  json.dumps(aliases), json.dumps(topics), text[:1200]),
             )
-            db.execute("INSERT INTO authorities_fts (authority_id, search_text) VALUES (?, ?)",
-                       (authority_id, search_text))
+            # Full body text is indexed — a statute's operative language often
+            # sits deep in the section, and truncation hides exactly the text
+            # attorneys ask about. Field weighting at query time makes title
+            # and citation hits outrank body-frequency matches.
+            db.execute(
+                "INSERT INTO authorities_fts (authority_id, citation, title, aliases, topics, body) "
+                "VALUES (?,?,?,?,?,?)",
+                (authority_id, citation, title, " ".join(aliases), " ".join(topics), text))
             spans = record.get("spans") or derive_spans(text)
             for pos, span in enumerate(spans):
                 db.execute(
@@ -296,7 +301,9 @@ def scaffold_pack(packs_dir: Path, pack_id: str, name: str, jurisdiction: str) -
         "version": "1",
         "citation_patterns": [
             r"\b\d{1,4}\s+[A-Z][A-Za-z.]*\.?\s?(?:2d|3d|4th)?\s+\d{1,5}\b",
-            r"\b(?:§|[Ss]ection)\s*\d[\w.\-]*\b",
+            # no \b before § — it is a non-word character, so a word boundary
+            # can never precede it after a space
+            r"(?:§|\b[Ss]ection)\s*\d[\w.\-]*\b",
             r"\b[Rr]ule\s+\d[\w.]*\b",
         ],
         "disclaimer": (

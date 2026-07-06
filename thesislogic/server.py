@@ -88,6 +88,16 @@ class SessionBody(BaseModel):
     matter_id: str = "general"
 
 
+class PasswordBody(BaseModel):
+    current_password: str
+    new_password: str
+
+
+class AdminResetBody(BaseModel):
+    user_id: str
+    new_password: str
+
+
 class ResearchBody(BaseModel):
     question: str
     document_ids: list[str] = []
@@ -173,6 +183,35 @@ def create_session(body: SessionBody):
                                    settings.lockout_seconds)
     except auth.AuthError as exc:
         raise HTTPException(exc.status, str(exc)) from exc
+
+
+@app.post("/api/v1/auth/password")
+def change_password(body: PasswordBody, session: dict = Depends(require_session),
+                    authorization: str = Header(default="")):
+    token = authorization.removeprefix("Bearer ").strip()
+    db = get_db()
+    try:
+        auth.change_password(db, session["user_id"], body.current_password,
+                             body.new_password, keep_token=token)
+    except auth.AuthError as exc:
+        raise HTTPException(exc.status, str(exc)) from exc
+    audit.record(db, audit.new_request_id(), "password_changed",
+                 user_id=session["user_id"], matter_id=session["matter_id"])
+    return {"status": "password_changed"}
+
+
+@app.post("/api/v1/auth/admin-reset-password")
+def admin_reset_password(body: AdminResetBody, session: dict = Depends(require_session)):
+    if session["role"] != "admin":
+        raise HTTPException(403, "admin role required")
+    db = get_db()
+    try:
+        auth.admin_reset_password(db, body.user_id, body.new_password)
+    except auth.AuthError as exc:
+        raise HTTPException(exc.status, str(exc)) from exc
+    audit.record(db, audit.new_request_id(), "password_admin_reset",
+                 user_id=session["user_id"], detail={"target_user": body.user_id})
+    return {"status": "password_reset", "user_id": body.user_id}
 
 
 # ---------------------------------------------------------------- documents

@@ -106,6 +106,32 @@ def create_session(db: sqlite3.Connection, user_id: str, password: str, matter_i
     }
 
 
+def change_password(db: sqlite3.Connection, user_id: str, current_password: str,
+                    new_password: str, keep_token: str = "") -> None:
+    row = db.execute("SELECT password_hash FROM users WHERE user_id = ?", (user_id,)).fetchone()
+    if row is None or not verify_password(current_password, row["password_hash"]):
+        raise AuthError("current password is incorrect", 403)
+    if len(new_password) < 10:
+        raise AuthError("new password must be at least 10 characters", 400)
+    db.execute("UPDATE users SET password_hash = ?, failed_attempts = 0, locked_until = NULL "
+               "WHERE user_id = ?", (hash_password(new_password), user_id))
+    # Revoke every other session for this user; the caller's session survives.
+    db.execute("DELETE FROM sessions WHERE user_id = ? AND token != ?", (user_id, keep_token))
+    db.commit()
+
+
+def admin_reset_password(db: sqlite3.Connection, user_id: str, new_password: str) -> None:
+    if len(new_password) < 10:
+        raise AuthError("new password must be at least 10 characters", 400)
+    row = db.execute("SELECT user_id FROM users WHERE user_id = ?", (user_id,)).fetchone()
+    if row is None:
+        raise AuthError("user not found", 404)
+    db.execute("UPDATE users SET password_hash = ?, failed_attempts = 0, locked_until = NULL "
+               "WHERE user_id = ?", (hash_password(new_password), user_id))
+    db.execute("DELETE FROM sessions WHERE user_id = ?", (user_id,))
+    db.commit()
+
+
 def resolve_session(db: sqlite3.Connection, token: str) -> dict:
     if not token:
         raise AuthError("missing bearer token")
