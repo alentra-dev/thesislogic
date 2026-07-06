@@ -68,13 +68,21 @@ def validate(answer: str, evidence: EvidencePackage, pack: Pack | None = None) -
         return ProofResult(passed=False, warnings=["candidate answer is empty"])
 
     allowed = {normalize_citation(c) for c in evidence.allowed_citations}
-    # Section/rule fragments of allowed citations also count ("§ 452.330"
-    # inside "Mo. Rev. Stat. § 452.330").
+    # Citations quoted inside validated support spans are grounded too: when a
+    # retrieved holding says "child support ... in accordance with Rule 88.01",
+    # the model may cite Rule 88.01 even though the rule itself is not a
+    # separate authority record in the corpus.
+    grounded_text = normalize_citation(" ".join(
+        [span.get("span_text", "") for span in evidence.spans]
+        + [a.get("excerpt", "") for a in evidence.authorities]))
     cited = extract_citations(answer, pack)
     verified, unverified = [], []
     for citation in cited:
         norm = normalize_citation(citation)
-        ok = norm in allowed or any(norm in a or a in norm for a in allowed)
+        # Section/rule fragments of allowed citations also count ("§ 452.330"
+        # inside "Mo. Rev. Stat. § 452.330").
+        ok = (norm in allowed or any(norm in a or a in norm for a in allowed)
+              or (len(norm) >= 6 and norm in grounded_text))
         (verified if ok else unverified).append(citation)
 
     if unverified:

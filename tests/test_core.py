@@ -185,3 +185,13 @@ def test_auth_lifecycle(tmp_path: Path):
         auth.create_session(db, "alice", "wrong", "matter-1", 3600, 3, 60)
     with pytest.raises(auth.AuthError):
         auth.resolve_session(db, "bogus-token")
+
+
+def test_proofgate_accepts_span_grounded_citation(pack):
+    retriever = Retriever(pack)
+    evidence = retriever.retrieve("child support presumed amount 915 S.W.2d 372")
+    # "Rule 88.01" is not an authority record, but appears inside a validated span.
+    answer = "Per 915 S.W.2d 372, the court must consider Rule 88.01 in every case."
+    proof = proofgate.validate(answer, evidence, pack)
+    assert proof.passed, proof.warnings
+    assert any("88.01" in c for c in proof.verified_citations)
