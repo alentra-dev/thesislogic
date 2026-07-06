@@ -93,6 +93,11 @@ thesislogic pack embed missouri
 Retrieval blends semantic candidates with lexical ones before ranking. Without embeddings,
 ThesisLogic runs lexical-only — fully functional, just less tolerant of vocabulary mismatch.
 
+**Scale note:** the current semantic blend is dependency-free pure Python and is recommended for
+packs up to roughly 10,000 authorities (or a curated high-value subset). For larger corpora, run
+lexical-only — exact-citation, alias, and BM25 retrieval carry the workload well — or embed only
+your most-cited authorities. A vector-index backend is on the roadmap.
+
 ## Step 3 — Define your practice areas
 
 `practice_areas.json` routes questions to the right doctrinal neighborhood and shows attorneys
