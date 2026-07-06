@@ -88,7 +88,9 @@ Register the first user from the login screen — it automatically becomes the a
 - Optional for local AI: any OpenAI-compatible model server
 - Optional for cloud AI: `pip install 'thesislogic[anthropic]'` + `ANTHROPIC_API_KEY`
 
-## License
+## Author & License
+
+Created by **Udonna Eke-Okoro** ([@alentra-dev](https://github.com/alentra-dev)).
 
 Apache-2.0. ThesisLogic is a tool for licensed professionals; it does not provide legal advice,
 and every output requires attorney review before reliance or filing.

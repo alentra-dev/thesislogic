@@ -9,7 +9,7 @@ description = "Open-source, proof-gated legal AI workbench for law firms. Local 
 readme = "README.md"
 license = { text = "Apache-2.0" }
 requires-python = ">=3.11"
-authors = [{ name = "ThesisLogic Contributors" }]
+authors = [{ name = "Udonna Eke-Okoro", email = "ekeokoro0@gmail.com" }]
 keywords = ["legal", "ai", "rag", "citations", "law", "compliance"]
 classifiers = [
     "Development Status :: 4 - Beta",
