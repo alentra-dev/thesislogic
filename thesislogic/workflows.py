@@ -82,6 +82,12 @@ def _deterministic_memo(evidence: EvidencePackage, pack: Pack) -> str:
              f"**Question Presented:** {evidence.question}", ""]
     if evidence.practice_areas:
         lines += [f"**Practice area:** {', '.join(evidence.practice_areas)}", ""]
+    if evidence.authorities and not evidence.proof_ready:
+        lines += ["> **Retrieval confidence: LOW.** The authorities below matched this question "
+                  "only on scattered vocabulary and may not be responsive to it. AI synthesis "
+                  "was withheld for that reason. Consider rephrasing with doctrinal terms, a "
+                  "citation, or a case name — or confirm the relevant sources are loaded in "
+                  "this jurisdiction pack.", ""]
     if not evidence.authorities:
         lines += ["## Brief Answer", "", proofgate.DECLINE_LANGUAGE, "",
                   "Consider rephrasing with doctrinal terms, a citation, or a case name — or "
@@ -187,6 +193,13 @@ def _try_live(deterministic: str, evidence: EvidencePackage, pack: Pack,
     if provider.name == "none" or not evidence.authorities:
         generation_meta["state"] = ("skipped_no_provider" if provider.name == "none"
                                     else "skipped_no_evidence")
+        return deterministic, "deterministic", {}, generation_meta
+    if not evidence.proof_ready:
+        # A fluent answer citing real-but-unresponsive authorities is still a
+        # wrong answer. When retrieval matched only scattered vocabulary,
+        # decline generation entirely rather than dress weak evidence up.
+        generation_meta["state"] = "skipped_low_evidence_confidence"
+        generation_meta["question_coverage"] = evidence.retrieval_audit.get("question_coverage")
         return deterministic, "deterministic", {}, generation_meta
 
     system, prompt = _generation_prompt(evidence, pack, task, style_directives,

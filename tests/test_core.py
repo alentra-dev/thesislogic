@@ -295,3 +295,25 @@ def test_generation_prompt_respects_budget(pack):
     _, large = _generation_prompt(evidence, pack, "task", budget=20000)
     assert len(small) < len(large) or evidence.spans == []
     assert "ALLOWED CITATIONS" in small
+
+
+def test_low_coverage_question_withholds_generation(pack):
+    class EagerProvider:
+        name = "test"
+
+        def generate(self, system, prompt, max_tokens=1600):
+            return GenerationResult(text="Confident nonsense. See 915 S.W.2d 372.",
+                                    provider="test", model="t", live=True)
+
+        def health(self):
+            return {"provider": "test", "ready": True}
+
+    settings = Settings()
+    settings.prefer_live_output = True
+    result = workflows.research(
+        "What are maritime salvage rights for asteroid mining vessels?",
+        pack, Retriever(pack), EagerProvider(), settings)
+    assert result.mode == "deterministic"
+    assert result.generation["state"] in ("skipped_low_evidence_confidence", "skipped_no_evidence")
+    if result.evidence["authorities"]:
+        assert "Retrieval confidence: LOW" in result.answer

@@ -45,6 +45,10 @@ class EvidencePackage:
     allowed_citations: list[str] = field(default_factory=list)
     practice_areas: list[str] = field(default_factory=list)
     retrieval_audit: dict = field(default_factory=dict)
+    # False when retrieval matched only on scattered vocabulary: a verified
+    # citation to an unresponsive authority is still a wrong answer, so live
+    # generation is withheld unless the evidence is actually about the question.
+    proof_ready: bool = True
 
     def to_dict(self) -> dict:
         return {
@@ -55,6 +59,7 @@ class EvidencePackage:
             "allowed_citations": self.allowed_citations,
             "practice_areas": self.practice_areas,
             "retrieval_audit": self.retrieval_audit,
+            "proof_ready": self.proof_ready,
         }
 
 
@@ -249,6 +254,19 @@ class Retriever:
 
         spans = self._spans_for(db, [a["authority_id"] for a in ranked], question)
         allowed = [a["citation"] for a in ranked if a["citation"]]
+
+        # Question-term coverage: what fraction of the question's content
+        # vocabulary actually appears in the retrieved evidence. Low coverage
+        # with no citation/name match means the corpus has nothing responsive.
+        qtokens = {t.lower() for t in _WORD.findall(question)
+                   if len(t) > 3 and t.lower() not in _STOPWORDS}
+        evidence_text = " ".join(
+            [s["span_text"] for s in spans] + [a["title"] + " " + a["excerpt"] for a in ranked]
+        ).lower()
+        coverage = (sum(1 for t in qtokens if t in evidence_text) / len(qtokens)) if qtokens else 0.0
+        anchored = bool(exact or aliases)
+        proof_ready = bool(ranked) and (anchored or coverage >= 0.45)
+
         return EvidencePackage(
             question=question,
             workflow=workflow,
@@ -262,5 +280,8 @@ class Retriever:
                                "lexical": len(lexical), "semantic": len(semantic)},
                 "semantic_active": bool(semantic),
                 "promoted": len(ranked),
+                "question_coverage": round(coverage, 3),
+                "anchored": anchored,
             },
+            proof_ready=proof_ready,
         )
