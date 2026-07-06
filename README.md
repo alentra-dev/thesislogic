@@ -92,5 +92,8 @@ Register the first user from the login screen — it automatically becomes the a
 
 Created by **Udonna Eke-Okoro** ([@alentra-dev](https://github.com/alentra-dev)).
 
-Apache-2.0. ThesisLogic is a tool for licensed professionals; it does not provide legal advice,
-and every output requires attorney review before reliance or filing.
+Apache-2.0 — provided **as is**, with no warranty of any kind. ThesisLogic is a tool for licensed
+professionals: it does not provide legal advice, creates no attorney–client relationship, and
+every output requires attorney review before reliance or filing. Deployers are solely responsible
+for their corpus, their model providers, and their professional-responsibility compliance.
+**Read [DISCLAIMER.md](DISCLAIMER.md) before deploying.**

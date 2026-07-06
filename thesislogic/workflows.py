@@ -26,8 +26,9 @@ from .providers.base import GenerationProvider
 from .retrieval import EvidencePackage, Retriever
 
 PROFESSIONAL_NOTICE = (
-    "AI-assisted work product. A licensed attorney must review and verify all "
-    "authorities and conclusions before reliance or filing.")
+    "AI-assisted work product; not legal advice. A licensed attorney must review and verify "
+    "all authorities and conclusions before reliance or filing. Provided as is, without "
+    "warranty; see DISCLAIMER.md.")
 
 
 @dataclass
