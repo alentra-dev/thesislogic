@@ -1,0 +1,16 @@
+__pycache__/
+*.pyc
+.venv/
+venv/
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+
+# runtime state — never commit firm data
+data/
+packs/*/authorities.sqlite3*
+packs/*/authorities.ndjson
+packs/*/*.tmp*
+*.env
+!.env.example

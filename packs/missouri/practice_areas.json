@@ -1,0 +1,514 @@
+{
+  "practice_areas": [
+    {
+      "id": "family_law",
+      "name": "Family Law",
+      "keywords": [
+        "child support",
+        "form 14",
+        "custody",
+        "visitation",
+        "maintenance",
+        "involuntary unemployment",
+        "support obligation",
+        "divorce",
+        "dissolution",
+        "marital property",
+        "separate property",
+        "legal separation",
+        "nonmarital",
+        "tracing"
+      ],
+      "description": "The Missouri Bar identifies Family Law as a substantive committee area, and its family-law programming highlights topics such as custody modifications, guardian ad litem issues, business valuation, and related family-law practice issues.",
+      "official_sources": [
+        {
+          "source_name": "The Missouri Bar",
+          "source_type": "committee_listing",
+          "title": "2025 Spring Committee Meetings",
+          "url": "https://mobar.org/site/content/About/2025_Spring_Committee_Meetings.aspx"
+        },
+        {
+          "source_name": "The Missouri Bar",
+          "source_type": "news_description",
+          "title": "2025 Family Law Conference coming to Branson Aug. 14-16",
+          "url": "https://news.mobar.org/2025-family-law-conference-coming-to-branson-aug-14-16/"
+        }
+      ],
+      "priority": 110
+    },
+    {
+      "id": "personal_injury",
+      "name": "Tort & Transportation Law",
+      "keywords": [
+        "medical malpractice",
+        "health care provider",
+        "physician",
+        "hospital",
+        "nursing home",
+        "health care liability",
+        "malpractice"
+      ],
+      "description": "The Missouri Bar places tort-oriented practice inside the Litigation Division, which is dedicated to helping litigation attorneys become more effective advocates and includes Tort & Transportation Law among its committees.",
+      "official_sources": [
+        {
+          "source_name": "The Missouri Bar",
+          "source_type": "division_scope",
+          "title": "Litigation Division",
+          "url": "https://mobar.org/site/content/About/CommitteeDivisions/Litigation_Division.aspx"
+        }
+      ],
+      "priority": 110
+    },
+    {
+      "id": "criminal",
+      "name": "Criminal Practice & Procedure",
+      "keywords": [
+        "indictment",
+        "felony",
+        "misdemeanor",
+        "sentence",
+        "probation",
+        "search warrant",
+        "arrest",
+        "ineffective assistance"
+      ],
+      "description": "Official Missouri sources treat criminal matters as a distinct practice and court category through the Missouri Bar's Criminal Practice & Procedure committee and Missouri courts' criminal case resources.",
+      "official_sources": [
+        {
+          "source_name": "The Missouri Bar",
+          "source_type": "committee_listing",
+          "title": "2025 Spring Committee Meetings",
+          "url": "https://mobar.org/site/content/About/2025_Spring_Committee_Meetings.aspx"
+        },
+        {
+          "source_name": "Missouri Courts",
+          "source_type": "court_category",
+          "title": "Missouri Courts",
+          "url": "https://www.courts.mo.gov/"
+        }
+      ],
+      "priority": 108
+    },
+    {
+      "id": "business",
+      "name": "Business/Corporate Division",
+      "keywords": [
+        "shareholder",
+        "operating agreement",
+        "partnership",
+        "commercial contract",
+        "fiduciary duty",
+        "merger",
+        "breach of contract"
+      ],
+      "description": "The Missouri Bar's Business/Corporate Division provides information and assistance to practitioners in anti-trust; corporate, estate planning, partnership, real estate development, taxation; commercial and banking law, and sponsors monitoring and updating of business-oriented laws.",
+      "official_sources": [
+        {
+          "source_name": "The Missouri Bar",
+          "source_type": "division_scope",
+          "title": "Business/Corporate Division",
+          "url": "https://mobar.org/site/content/About/CommitteeDivisions/Business_Corporation_Division.aspx"
+        }
+      ],
+      "priority": 107
+    },
+    {
+      "id": "probate",
+      "name": "Estate Planning & Probate Administration Law / Probate & Trust Division",
+      "keywords": [
+        "will",
+        "trust",
+        "estate",
+        "personal representative",
+        "beneficiary",
+        "probate",
+        "guardianship",
+        "inheritance"
+      ],
+      "description": "Official Missouri sources treat probate-related work through Estate Planning & Probate Administration and Probate & Trust structures on the bar side, with Wills/Estates used as a public-help topic by Missouri Legal Services.",
+      "official_sources": [
+        {
+          "source_name": "The Missouri Bar",
+          "source_type": "committee_listing",
+          "title": "2025 Spring Committee Meetings",
+          "url": "https://mobar.org/site/content/About/2025_Spring_Committee_Meetings.aspx"
+        },
+        {
+          "source_name": "Missouri Legal Services",
+          "source_type": "topic_category",
+          "title": "Wills/Estates",
+          "url": "https://www.lsmo.org/topics"
+        }
+      ],
+      "priority": 107
+    },
+    {
+      "id": "employment",
+      "name": "Labor & Employment Law",
+      "keywords": [
+        "employee",
+        "employer",
+        "workplace",
+        "wages",
+        "termination",
+        "overtime",
+        "harassment",
+        "retaliation",
+        "noncompete"
+      ],
+      "description": "Official Missouri sources place Labor & Employment Law within the Missouri Bar's Litigation Division and also recognize Employment as a public-help topic through Missouri Legal Services.",
+      "official_sources": [
+        {
+          "source_name": "The Missouri Bar",
+          "source_type": "division_scope",
+          "title": "Litigation Division",
+          "url": "https://mobar.org/site/content/About/CommitteeDivisions/Litigation_Division.aspx"
+        },
+        {
+          "source_name": "Missouri Legal Services",
+          "source_type": "topic_category",
+          "title": "Employment",
+          "url": "https://www.lsmo.org/topics"
+        }
+      ],
+      "priority": 107
+    },
+    {
+      "id": "real_estate",
+      "name": "Real Estate Practice & Procedure",
+      "keywords": [
+        "deed",
+        "mortgage",
+        "easement",
+        "title",
+        "closing",
+        "real estate",
+        "adverse possession",
+        "title dispute"
+      ],
+      "description": "The Missouri Bar includes Real Estate Practice & Procedure in its Litigation Division, signaling a recognized substantive practice area tied to real-property disputes and procedure.",
+      "official_sources": [
+        {
+          "source_name": "The Missouri Bar",
+          "source_type": "division_scope",
+          "title": "Litigation Division",
+          "url": "https://mobar.org/site/content/About/CommitteeDivisions/Litigation_Division.aspx"
+        }
+      ],
+      "priority": 106
+    },
+    {
+      "id": "workers_comp",
+      "name": "Workers' Compensation Law",
+      "keywords": [
+        "workers compensation",
+        "work injury",
+        "occupational disease",
+        "temporary total disability",
+        "permanent partial disability",
+        "compensation claim"
+      ],
+      "description": "The Missouri Bar treats Workers' Compensation Law as a committee within its Litigation Division, indicating a distinct Missouri practice area for workplace injury and compensation matters.",
+      "official_sources": [
+        {
+          "source_name": "The Missouri Bar",
+          "source_type": "division_scope",
+          "title": "Litigation Division",
+          "url": "https://mobar.org/site/content/About/CommitteeDivisions/Litigation_Division.aspx"
+        }
+      ],
+      "priority": 106
+    },
+    {
+      "id": "collections",
+      "name": "Collections / Debt Collection (public-help and court overlay)",
+      "keywords": [
+        "debt collection",
+        "garnishment",
+        "judgment debtor",
+        "collection action",
+        "account stated",
+        "statute of limitations"
+      ],
+      "description": "Official Missouri sources do not appear to use Collections as a primary Missouri Bar committee label, but debt-collection and civil-collections matters appear in public-help and court civil-category materials.",
+      "official_sources": [
+        {
+          "source_name": "Missouri Legal Services",
+          "source_type": "topic_category",
+          "title": "Consumer",
+          "url": "https://www.lsmo.org/topics"
+        },
+        {
+          "source_name": "Missouri Courts",
+          "source_type": "local_court_category",
+          "title": "Boone County Civil Division",
+          "url": "https://www.courts.mo.gov/hosted/circuit13/courtoffices/CivilClerks/bnecivil.htm"
+        }
+      ],
+      "priority": 105
+    },
+    {
+      "id": "administrative_government",
+      "name": "Administrative Law / Local Government Law / Government Attorneys",
+      "keywords": [
+        "agency",
+        "licensing",
+        "administrative hearing",
+        "regulation",
+        "board order",
+        "permit",
+        "zoning",
+        "regulatory appeal"
+      ],
+      "description": "Official Missouri sources split this space across Administrative Law, Local Government Law, and Government Attorneys rather than one single label, indicating a cluster of state and local regulatory/government practice areas.",
+      "official_sources": [
+        {
+          "source_name": "The Missouri Bar",
+          "source_type": "committee_listing",
+          "title": "2025 Spring Committee Meetings",
+          "url": "https://mobar.org/site/content/About/2025_Spring_Committee_Meetings.aspx"
+        },
+        {
+          "source_name": "The Missouri Bar",
+          "source_type": "division_scope",
+          "title": "Specialty Division",
+          "url": "https://mobar.org/site/content/About/CommitteeDivisions/Specialty_Division.aspx"
+        }
+      ],
+      "priority": 105
+    },
+    {
+      "id": "immigration",
+      "name": "Immigration Law",
+      "keywords": [
+        "removal",
+        "deportation",
+        "visa",
+        "asylum",
+        "adjustment of status",
+        "ice hold",
+        "immigration"
+      ],
+      "description": "The Missouri Bar lists Immigration Law as a committee within its Specialty Division, reflecting a recognized Missouri practice area even though much of the substantive law is federal.",
+      "official_sources": [
+        {
+          "source_name": "The Missouri Bar",
+          "source_type": "division_scope",
+          "title": "Specialty Division",
+          "url": "https://mobar.org/site/content/About/CommitteeDivisions/Specialty_Division.aspx"
+        }
+      ],
+      "priority": 104
+    },
+    {
+      "id": "bankruptcy",
+      "name": "Financial Services & Insolvency Law",
+      "keywords": [
+        "chapter 7",
+        "chapter 13",
+        "automatic stay",
+        "bankruptcy",
+        "debtor",
+        "creditor meeting",
+        "proof of claim"
+      ],
+      "description": "Official Missouri sources align bankruptcy-related work more closely with Financial Services & Insolvency Law on the bar side, while Missouri Legal Services uses Bankruptcy as a public-facing topic.",
+      "official_sources": [
+        {
+          "source_name": "The Missouri Bar",
+          "source_type": "division_scope",
+          "title": "Business/Corporate Division",
+          "url": "https://mobar.org/site/content/About/CommitteeDivisions/Business_Corporation_Division.aspx"
+        },
+        {
+          "source_name": "Missouri Legal Services",
+          "source_type": "topic_category",
+          "title": "Bankruptcy",
+          "url": "https://www.lsmo.org/topics"
+        }
+      ],
+      "priority": 104
+    },
+    {
+      "id": "tax",
+      "name": "Taxation Law",
+      "keywords": [
+        "tax",
+        "assessment",
+        "revenue",
+        "sales tax",
+        "income tax",
+        "withholding",
+        "property tax"
+      ],
+      "description": "Official Missouri sources recognize Taxation Law through the Missouri Bar's Business/Corporate Division and Taxes as a public-help topic through Missouri Legal Services.",
+      "official_sources": [
+        {
+          "source_name": "The Missouri Bar",
+          "source_type": "division_scope",
+          "title": "Business/Corporate Division",
+          "url": "https://mobar.org/site/content/About/CommitteeDivisions/Business_Corporation_Division.aspx"
+        },
+        {
+          "source_name": "Missouri Legal Services",
+          "source_type": "topic_category",
+          "title": "Taxes",
+          "url": "https://www.lsmo.org/topics"
+        }
+      ],
+      "priority": 104
+    },
+    {
+      "id": "environmental",
+      "name": "Environmental & Energy Law",
+      "keywords": [
+        "environmental",
+        "clean water",
+        "hazardous waste",
+        "spill",
+        "contamination",
+        "state environmental regulation"
+      ],
+      "description": "The Missouri Bar places Environmental & Energy Law within its Business/Corporate Division, recognizing it as a substantive Missouri practice area.",
+      "official_sources": [
+        {
+          "source_name": "The Missouri Bar",
+          "source_type": "division_scope",
+          "title": "Business/Corporate Division",
+          "url": "https://mobar.org/site/content/About/CommitteeDivisions/Business_Corporation_Division.aspx"
+        }
+      ],
+      "priority": 103
+    },
+    {
+      "id": "healthcare_medical",
+      "name": "Health & Hospital Administration Law",
+      "keywords": [
+        "hipaa",
+        "medical records",
+        "healthcare compliance",
+        "patient privacy",
+        "provider compliance",
+        "hospital policy"
+      ],
+      "description": "Official Missouri sources distinguish healthcare regulatory/compliance work through Health & Hospital Administration Law on the bar side and Health Care as a public-help topic through Missouri Legal Services.",
+      "official_sources": [
+        {
+          "source_name": "The Missouri Bar",
+          "source_type": "division_scope",
+          "title": "Business/Corporate Division",
+          "url": "https://mobar.org/site/content/About/CommitteeDivisions/Business_Corporation_Division.aspx"
+        },
+        {
+          "source_name": "Missouri Legal Services",
+          "source_type": "topic_category",
+          "title": "Health Care",
+          "url": "https://www.lsmo.org/topics/2265/health-care"
+        }
+      ],
+      "priority": 103
+    },
+    {
+      "id": "intellectual_property",
+      "name": "Intellectual Property & Biotech Law",
+      "keywords": [
+        "trademark",
+        "copyright",
+        "patent",
+        "trade secret",
+        "infringement",
+        "license agreement"
+      ],
+      "description": "The Missouri Bar treats Intellectual Property & Biotech Law as a substantive committee area within its Business/Corporate Division.",
+      "official_sources": [
+        {
+          "source_name": "The Missouri Bar",
+          "source_type": "division_scope",
+          "title": "Business/Corporate Division",
+          "url": "https://mobar.org/site/content/About/CommitteeDivisions/Business_Corporation_Division.aspx"
+        }
+      ],
+      "priority": 103
+    },
+    {
+      "id": "landlord_tenant",
+      "name": "Housing / Rent and Possession overlay",
+      "keywords": [
+        "eviction",
+        "security deposit",
+        "landlord",
+        "tenant",
+        "rent",
+        "lease default",
+        "unlawful detainer"
+      ],
+      "description": "Official Missouri sources more often treat landlord-tenant matters as Housing or rent-and-possession overlays rather than a standalone Missouri Bar committee area.",
+      "official_sources": [
+        {
+          "source_name": "Missouri Legal Services",
+          "source_type": "topic_category",
+          "title": "Housing",
+          "url": "https://www.lsmo.org/topics"
+        },
+        {
+          "source_name": "Missouri Courts",
+          "source_type": "local_court_category",
+          "title": "Boone County Civil Division",
+          "url": "https://www.courts.mo.gov/hosted/circuit13/courtoffices/CivilClerks/bnecivil.htm"
+        }
+      ],
+      "priority": 103
+    },
+    {
+      "id": "elder_law",
+      "name": "Elder Law",
+      "keywords": [
+        "elder abuse",
+        "long-term care",
+        "nursing home resident",
+        "capacity",
+        "medicaid planning",
+        "power of attorney"
+      ],
+      "description": "The Missouri Bar recognizes Elder Law as a distinct committee area, separate from but related to probate, trust, and long-term-care topics.",
+      "official_sources": [
+        {
+          "source_name": "The Missouri Bar",
+          "source_type": "committee_listing",
+          "title": "2025 Spring Committee Meetings",
+          "url": "https://mobar.org/site/content/About/2025_Spring_Committee_Meetings.aspx"
+        }
+      ],
+      "priority": 102
+    },
+    {
+      "id": "municipal_traffic",
+      "name": "Local Government Law / Traffic overlay",
+      "keywords": [
+        "ordinance",
+        "traffic citation",
+        "speeding",
+        "city court",
+        "municipal",
+        "moving violation",
+        "license suspension"
+      ],
+      "description": "Official Missouri sources separate Local Government Law on the bar side from traffic-related court categories, so this registry treats municipal and traffic work as an overlay rather than one pure bar taxonomy bucket.",
+      "official_sources": [
+        {
+          "source_name": "The Missouri Bar",
+          "source_type": "division_scope",
+          "title": "Specialty Division",
+          "url": "https://mobar.org/site/content/About/CommitteeDivisions/Specialty_Division.aspx"
+        },
+        {
+          "source_name": "Missouri Courts",
+          "source_type": "court_category",
+          "title": "Missouri Courts",
+          "url": "https://www.courts.mo.gov/"
+        }
+      ],
+      "priority": 102
+    }
+  ]
+}

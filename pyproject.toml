@@ -1,0 +1,45 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "thesislogic"
+version = "0.1.0"
+description = "Open-source, proof-gated legal AI workbench for law firms. Local or cloud AI, any jurisdiction, any practice."
+readme = "README.md"
+license = { text = "Apache-2.0" }
+requires-python = ">=3.11"
+authors = [{ name = "ThesisLogic Contributors" }]
+keywords = ["legal", "ai", "rag", "citations", "law", "compliance"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Legal Industry",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Office/Business",
+]
+dependencies = [
+    "fastapi>=0.110",
+    "uvicorn>=0.29",
+    "pydantic>=2.6",
+    "httpx>=0.27",
+    "python-multipart>=0.0.9",
+]
+
+[project.optional-dependencies]
+anthropic = ["anthropic>=0.40"]
+dev = ["pytest>=8", "httpx>=0.27"]
+
+[project.scripts]
+thesislogic = "thesislogic.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/alentra-dev/thesislogic"
+Issues = "https://github.com/alentra-dev/thesislogic/issues"
+
+[tool.setuptools.packages.find]
+include = ["thesislogic*"]
+
+[tool.setuptools.package-data]
+thesislogic = ["ui/*.html"]

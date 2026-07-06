@@ -1,0 +1,17 @@
+{
+  "name": "Missouri",
+  "jurisdiction": "Missouri",
+  "description": "Missouri cases, statutes (RSMo), rules, and secondary references.",
+  "version": "1",
+  "citation_patterns": [
+    "\\b\\d{1,4}\\s+S\\.?W\\.?\\s?(?:2d|3d)\\s+\\d{1,5}\\b",
+    "\\b\\d{1,4}\\s+Mo\\.?\\s?(?:App\\.?)?\\s+\\d{1,5}\\b",
+    "\\b(?:\u00a7|[Ss]ection)\\s*\\d{1,3}\\.\\d+\\b",
+    "\\b[Rr]ule\\s+\\d{1,3}\\.\\d+\\b",
+    "\\bRSMo\\.?\\s*(?:\u00a7\\s*)?\\d{1,3}\\.\\d+\\b",
+    "\\b\\d{1,4}\\s+U\\.?S\\.?\\s+\\d{1,5}\\b",
+    "\\b\\d{1,4}\\s+S\\.?\\s?Ct\\.?\\s+\\d{1,5}\\b"
+  ],
+  "disclaimer": "AI-assisted work product for Missouri practice. A licensed attorney must verify every authority before reliance or filing. This tool does not provide legal advice.",
+  "prompt_overlay": "You are assisting a licensed attorney practicing in Missouri. Cite only from the provided authorities, using their exact citation strings."
+}

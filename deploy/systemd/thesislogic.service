@@ -1,0 +1,17 @@
+[Unit]
+Description=ThesisLogic Legal AI Workbench
+After=network.target
+
+[Service]
+Type=simple
+User=thesislogic
+Group=thesislogic
+WorkingDirectory=/opt/thesislogic
+EnvironmentFile=/opt/thesislogic/thesislogic.env
+ExecStart=/opt/thesislogic/venv/bin/thesislogic serve
+Restart=on-failure
+RestartSec=5
+LimitNOFILE=65536
+
+[Install]
+WantedBy=multi-user.target

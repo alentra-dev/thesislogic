@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ThesisLogic — __FIRM_NAME__</title>
+<style>
+:root{
+  --bg:#101418; --panel:#181e25; --panel2:#1f2731; --line:#2b3644;
+  --text:#e6edf3; --muted:#8b98a5; --accent:#4da3ff; --ok:#3fb96f; --warn:#e0a935; --bad:#e05d5d;
+  font-size:15px;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,'Segoe UI',Roboto,sans-serif;height:100vh;display:flex;flex-direction:column}
+header{display:flex;align-items:center;gap:12px;padding:10px 18px;border-bottom:1px solid var(--line);background:var(--panel)}
+header .logo{font-weight:700;letter-spacing:.4px}
+header .logo span{color:var(--accent)}
+header .firm{color:var(--muted);font-size:.85rem}
+header .right{margin-left:auto;display:flex;gap:10px;align-items:center;color:var(--muted);font-size:.8rem}
+main{flex:1;display:flex;min-height:0}
+.rail{width:230px;border-right:1px solid var(--line);background:var(--panel);padding:12px;overflow-y:auto}
+.rail h3, .aside h3{margin:14px 0 6px;font-size:.72rem;text-transform:uppercase;letter-spacing:.8px;color:var(--muted)}
+.mode{display:block;width:100%;text-align:left;background:none;border:1px solid transparent;color:var(--text);padding:8px 10px;border-radius:8px;cursor:pointer;font-size:.9rem}
+.mode:hover{background:var(--panel2)}
+.mode.active{background:var(--panel2);border-color:var(--accent)}
+.doc{display:flex;gap:6px;align-items:flex-start;padding:5px 4px;font-size:.82rem;color:var(--muted);word-break:break-all}
+.doc input{margin-top:2px}
+.center{flex:1;display:flex;flex-direction:column;min-width:0}
+.thread{flex:1;overflow-y:auto;padding:20px 26px;display:flex;flex-direction:column;gap:16px}
+.msg{max-width:860px;padding:14px 18px;border-radius:12px;line-height:1.5;white-space:pre-wrap;font-size:.93rem}
+.msg.user{background:var(--panel2);align-self:flex-end}
+.msg.assistant{background:var(--panel);border:1px solid var(--line)}
+.msg .badges{margin:-4px 0 8px;display:flex;gap:6px;flex-wrap:wrap}
+.badge{font-size:.68rem;padding:2px 8px;border-radius:10px;border:1px solid var(--line);color:var(--muted)}
+.badge.live{border-color:var(--ok);color:var(--ok)}
+.badge.det{border-color:var(--accent);color:var(--accent)}
+.badge.down{border-color:var(--warn);color:var(--warn)}
+.badge.fail{border-color:var(--bad);color:var(--bad)}
+.composer{border-top:1px solid var(--line);background:var(--panel);padding:12px 20px;display:flex;gap:10px}
+.composer textarea{flex:1;background:var(--panel2);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:10px 12px;min-height:58px;resize:vertical;font-family:inherit;font-size:.92rem}
+button.primary{background:var(--accent);color:#08111c;border:0;border-radius:10px;padding:0 22px;font-weight:600;cursor:pointer}
+button.primary:disabled{opacity:.5;cursor:wait}
+.aside{width:300px;border-left:1px solid var(--line);background:var(--panel);padding:14px;overflow-y:auto;font-size:.82rem}
+.aside .card{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:10px}
+.aside .kv{display:flex;justify-content:space-between;gap:8px;margin:3px 0;color:var(--muted)}
+.aside .kv b{color:var(--text);font-weight:500;text-align:right}
+.warnlist li{color:var(--warn);margin:4px 0}
+.citelist li{color:var(--text);margin:3px 0}
+#login{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:10}
+#login .box{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:30px;width:360px}
+#login h1{margin:0 0 4px;font-size:1.3rem}
+#login p{color:var(--muted);font-size:.83rem;margin:0 0 18px}
+#login input{width:100%;margin:6px 0;background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:8px;padding:10px 12px;font-size:.9rem}
+#login .actions{display:flex;gap:10px;margin-top:14px}
+#login .actions button{flex:1;padding:10px}
+#login .err{color:var(--bad);font-size:.8rem;min-height:1.2em;margin-top:8px}
+button.ghost{background:none;border:1px solid var(--line);color:var(--text);border-radius:8px;cursor:pointer}
+.upload-label{display:block;border:1px dashed var(--line);border-radius:8px;text-align:center;color:var(--muted);padding:8px;cursor:pointer;font-size:.8rem;margin-top:8px}
+input[type=file]{display:none}
+select{background:var(--panel2);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:6px}
+.small{font-size:.72rem;color:var(--muted)}
+</style>
+</head>
+<body>
+<div id="login">
+  <div class="box">
+    <h1>Thesis<span style="color:var(--accent)">Logic</span></h1>
+    <p>Proof-gated legal AI workbench — __FIRM_NAME__ &middot; v__VERSION__</p>
+    <input id="l-user" placeholder="user id" autocomplete="username">
+    <input id="l-pass" type="password" placeholder="password" autocomplete="current-password">
+    <input id="l-matter" placeholder="matter id (e.g. smith-v-jones)" value="general">
+    <div class="actions">
+      <button class="primary" onclick="doLogin()">Open matter</button>
+      <button class="ghost" onclick="doRegister()">Register</button>
+    </div>
+    <div class="err" id="l-err"></div>
+  </div>
+</div>
+
+<header>
+  <div class="logo">Thesis<span>Logic</span></div>
+  <div class="firm">__FIRM_NAME__</div>
+  <div class="right">
+    <span id="h-matter"></span><span id="h-user"></span>
+    <span id="h-ai" class="badge">AI: …</span>
+    <button class="ghost" style="padding:4px 10px" onclick="logout()">Sign out</button>
+  </div>
+</header>
+
+<main>
+  <nav class="rail">
+    <h3>Workflows</h3>
+    <button class="mode active" data-mode="research">🔎 Research</button>
+    <button class="mode" data-mode="draft">✍️ Draft Document</button>
+    <button class="mode" data-mode="summary">📄 Summarize</button>
+    <button class="mode" data-mode="chronology">🕑 Chronology</button>
+    <button class="mode" data-mode="compare">⚖️ Compare</button>
+    <button class="mode" data-mode="privilege-review">🛡 Privilege Review</button>
+    <div id="compare-dim" style="display:none;margin-top:8px">
+      <select id="dimension">
+        <option value="deadlines">deadlines</option>
+        <option value="governing_law">governing law</option>
+        <option value="dates">dates</option>
+        <option value="amounts">amounts</option>
+      </select>
+    </div>
+    <h3>Matter documents</h3>
+    <div id="docs"></div>
+    <label class="upload-label">＋ upload files<input type="file" id="file-input" multiple></label>
+    <h3>Saved results</h3>
+    <div id="saved" class="small"></div>
+  </nav>
+
+  <section class="center">
+    <div class="thread" id="thread">
+      <div class="msg assistant">Welcome. Pick a workflow, check documents in the left rail when the
+workflow needs them, and ask your question. Every AI answer is proof-gated: citations that cannot be
+verified against the jurisdiction pack cause an automatic downgrade to the deterministic result, and
+everything is recorded in the audit trail on the right.</div>
+    </div>
+    <div class="composer">
+      <textarea id="input" placeholder="Ask a research question, or give drafting instructions…"></textarea>
+      <button class="primary" id="send" onclick="send()">Run</button>
+    </div>
+  </section>
+
+  <aside class="aside">
+    <h3>Answer provenance</h3>
+    <div class="card" id="prov"><span class="small">Run a workflow to see its audit trail.</span></div>
+    <h3>Verified citations</h3>
+    <div class="card"><ul class="citelist" id="cites"><li class="small">—</li></ul></div>
+    <h3>Proof-gate warnings</h3>
+    <div class="card"><ul class="warnlist" id="warns"><li class="small">—</li></ul></div>
+    <h3>Runtime</h3>
+    <div class="card" id="runtime"><span class="small">loading…</span></div>
+  </aside>
+</main>
+
+<script>
+let token = sessionStorage.getItem('tl_token') || '';
+let mode = 'research';
+
+const $ = s => document.querySelector(s);
+const api = (path, opts={}) => fetch('/api/v1'+path, {
+  ...opts,
+  headers: {'Content-Type':'application/json', 'Authorization':'Bearer '+token, ...(opts.headers||{})}
+}).then(async r => { const j = await r.json().catch(()=>({detail:r.statusText}));
+  if(!r.ok) throw new Error(j.detail||('HTTP '+r.status)); return j; });
+
+async function doRegister(){
+  $('#l-err').textContent='';
+  try{
+    await fetch('/api/v1/auth/register',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({user_id:$('#l-user').value,password:$('#l-pass').value})})
+      .then(async r=>{const j=await r.json(); if(!r.ok) throw new Error(j.detail);});
+    await doLogin();
+  }catch(e){ $('#l-err').textContent=e.message; }
+}
+async function doLogin(){
+  $('#l-err').textContent='';
+  try{
+    const j = await fetch('/api/v1/auth/session',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({user_id:$('#l-user').value,password:$('#l-pass').value,matter_id:$('#l-matter').value||'general'})})
+      .then(async r=>{const x=await r.json(); if(!r.ok) throw new Error(x.detail); return x;});
+    token=j.token; sessionStorage.setItem('tl_token',token);
+    $('#login').style.display='none';
+    $('#h-matter').textContent='matter: '+j.matter_id;
+    $('#h-user').textContent=j.display_name;
+    refreshAll();
+  }catch(e){ $('#l-err').textContent=e.message; }
+}
+function logout(){ sessionStorage.removeItem('tl_token'); location.reload(); }
+
+document.querySelectorAll('.mode').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('.mode').forEach(x=>x.classList.remove('active'));
+  b.classList.add('active'); mode=b.dataset.mode;
+  $('#compare-dim').style.display = mode==='compare'?'block':'none';
+  $('#input').placeholder = {
+    research:'Ask a research question…', draft:'Describe the document to draft…',
+    summary:'(optional note) — summarizes the checked documents',
+    chronology:'(optional note) — builds a timeline from the checked documents',
+    compare:'(optional note) — compares the checked documents','privilege-review':'(optional note) — flags privilege indicators'
+  }[mode];
+});
+
+function selectedDocs(){ return [...document.querySelectorAll('#docs input:checked')].map(c=>c.value); }
+
+async function refreshDocs(){
+  try{
+    const j = await api('/documents');
+    $('#docs').innerHTML = j.documents.length ? j.documents.map(d=>
+      `<label class="doc"><input type="checkbox" value="${d.document_id}"> ${d.filename}
+       <span class="small">(${d.extraction_path})</span></label>`).join('') :
+      '<div class="small">no documents yet</div>';
+  }catch(e){}
+}
+async function refreshSaved(){
+  try{
+    const j = await api('/results');
+    $('#saved').innerHTML = j.results.slice(0,12).map(r=>
+      `<div class="doc" style="cursor:pointer" onclick="openSaved('${r.result_id}')">${r.workflow}: ${(r.question||'').slice(0,40)||r.created_at}</div>`).join('') || 'none yet';
+  }catch(e){}
+}
+async function openSaved(id){
+  const j = await api('/results/'+id);
+  addMsg('assistant', j.payload.answer, j.payload);
+}
+async function refreshRuntime(){
+  try{
+    const j = await fetch('/api/v1/health').then(r=>r.json());
+    const gen = j.generation||{}; const ready = gen.ready;
+    $('#h-ai').textContent = 'AI: '+(j.posture?.provider||'none')+(ready?' ●':' ○');
+    $('#h-ai').className = 'badge '+(ready?'live':'');
+    $('#runtime').innerHTML =
+      kv('pack', j.pack?.name||j.pack?.error||'—') + kv('jurisdiction', j.pack?.jurisdiction||'—') +
+      kv('generation', (gen.provider||'none')+(gen.configured_model?' / '+gen.configured_model:'')) +
+      kv('gen ready', ready?'yes':'no') +
+      kv('embedding', j.embedding?.provider||'none') +
+      kv('live output', j.posture?.prefer_live_output?'allowed (proof-gated)':'shadow only') +
+      kv('OCR', (j.ocr?.scanned_pdf_ready?'pdf ✓':'pdf ✗')+' '+(j.ocr?.image_ocr_ready?'img ✓':'img ✗'));
+  }catch(e){ $('#runtime').textContent='health check failed'; }
+}
+function kv(k,v){ return `<div class="kv"><span>${k}</span><b>${v}</b></div>`; }
+function refreshAll(){ refreshDocs(); refreshSaved(); refreshRuntime(); }
+
+$('#file-input').onchange = async (ev)=>{
+  const fd = new FormData();
+  for(const f of ev.target.files) fd.append('files', f);
+  try{
+    const j = await fetch('/api/v1/uploads',{method:'POST',headers:{'Authorization':'Bearer '+token},body:fd})
+      .then(async r=>{const x=await r.json(); if(!r.ok) throw new Error(x.detail); return x;});
+    const lines = j.receipts.map(r=>`${r.filename}: ${r.status} (${r.extraction_path})${r.detail?' — '+r.detail:''}`);
+    addMsg('assistant','**Upload receipts**\n'+lines.join('\n'));
+    refreshDocs();
+  }catch(e){ addMsg('assistant','Upload failed: '+e.message); }
+  ev.target.value='';
+};
+
+function addMsg(role, text, meta){
+  const div = document.createElement('div');
+  div.className = 'msg '+role;
+  if(meta){
+    const badges = [];
+    badges.push(meta.mode==='live' ? '<span class="badge live">live model output — proof gate passed</span>'
+                                   : '<span class="badge det">deterministic output</span>');
+    const st = meta.generation?.state;
+    if(st==='downgraded_to_deterministic') badges.push('<span class="badge down">live output downgraded: unverified citations</span>');
+    if(st==='backend_unavailable') badges.push('<span class="badge fail">model backend unavailable</span>');
+    if(meta.generation?.model) badges.push(`<span class="badge">${meta.generation.provider}/${meta.generation.model}</span>`);
+    div.innerHTML = '<div class="badges">'+badges.join('')+'</div>';
+  }
+  const body = document.createElement('div');
+  body.textContent = text;
+  div.appendChild(body);
+  $('#thread').appendChild(div);
+  $('#thread').scrollTop = $('#thread').scrollHeight;
+}
+
+function renderProvenance(j){
+  const g = j.generation||{}; const p = j.proof||{}; const r = (j.evidence||{}).retrieval_audit||{};
+  $('#prov').innerHTML =
+    kv('request id', j.request_id||'—') + kv('mode', j.mode||'deterministic') +
+    kv('state', g.state||'deterministic_only') + kv('provider', g.provider||'none') +
+    kv('model', g.model||'—') + kv('proof gate', p.passed===undefined?'n/a':(p.passed?'passed':'failed')) +
+    kv('exact hits', r.candidates?.exact??'—') + kv('lexical', r.candidates?.lexical??'—') +
+    kv('semantic', r.candidates?.semantic??'—') + kv('promoted', r.promoted??'—');
+  const cites = (p.verified_citations&&p.verified_citations.length?p.verified_citations:(j.citations||[]));
+  $('#cites').innerHTML = cites.length ? cites.map(c=>`<li>${c}</li>`).join('') : '<li class="small">—</li>';
+  const warns = (p.warnings||[]);
+  $('#warns').innerHTML = warns.length ? warns.map(w=>`<li>${w}</li>`).join('') : '<li class="small">none</li>';
+}
+
+async function send(){
+  const text = $('#input').value.trim();
+  const docs = selectedDocs();
+  if(mode==='research' && !text) return;
+  if(['summary','chronology','compare','privilege-review'].includes(mode) && !docs.length){
+    addMsg('assistant','Check at least one matter document in the left rail for this workflow.'); return;
+  }
+  addMsg('user', (text||'('+mode+' on '+docs.length+' documents)'));
+  $('#send').disabled = true; $('#input').value='';
+  try{
+    let j;
+    if(mode==='research') j = await api('/workflows/research',{method:'POST',body:JSON.stringify({question:text,document_ids:docs})});
+    else if(mode==='draft') j = await api('/workflows/draft',{method:'POST',body:JSON.stringify({instructions:text,document_ids:docs})});
+    else j = await api('/workflows/'+mode,{method:'POST',body:JSON.stringify({document_ids:docs,dimension:$('#dimension').value})});
+    addMsg('assistant', j.answer, j);
+    renderProvenance(j);
+    refreshSaved();
+  }catch(e){ addMsg('assistant','Error: '+e.message); }
+  $('#send').disabled = false;
+}
+$('#input').addEventListener('keydown', e=>{ if(e.key==='Enter'&&(e.ctrlKey||e.metaKey)) send(); });
+
+refreshRuntime();
+if(token){
+  api('/documents').then(()=>{ $('#login').style.display='none'; refreshAll(); }).catch(()=>{});
+}
+</script>
+</body>
+</html>
