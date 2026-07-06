@@ -255,15 +255,24 @@ class Retriever:
         spans = self._spans_for(db, [a["authority_id"] for a in ranked], question)
         allowed = [a["citation"] for a in ranked if a["citation"]]
 
-        # Question-term coverage: what fraction of the question's content
-        # vocabulary actually appears in the retrieved evidence. Low coverage
-        # with no citation/name match means the corpus has nothing responsive.
+        # Question-term coverage, measured per authority: a responsive
+        # authority speaks to several facets of the question at once. A corpus
+        # can easily cover every question word *collectively* (one statute per
+        # word) while containing nothing responsive, so the floor is the best
+        # coverage any single top authority achieves. Tokens match on 5-char
+        # prefixes so child/children and payment/pay count as the same term.
         qtokens = {t.lower() for t in _WORD.findall(question)
                    if len(t) > 3 and t.lower() not in _STOPWORDS}
-        evidence_text = " ".join(
-            [s["span_text"] for s in spans] + [a["title"] + " " + a["excerpt"] for a in ranked]
-        ).lower()
-        coverage = (sum(1 for t in qtokens if t in evidence_text) / len(qtokens)) if qtokens else 0.0
+        spans_by_auth: dict[str, list[str]] = {}
+        for s in spans:
+            spans_by_auth.setdefault(s["authority_id"], []).append(s["span_text"])
+        coverage = 0.0
+        if qtokens:
+            prefixes = {t[:5] for t in qtokens}
+            for a in ranked[:5]:
+                text = " ".join([a["title"], a["excerpt"]] + spans_by_auth.get(a["authority_id"], []))
+                etokens = {t.lower()[:5] for t in _WORD.findall(text) if len(t) > 3}
+                coverage = max(coverage, sum(1 for p in prefixes if p in etokens) / len(prefixes))
         anchored = bool(exact or aliases)
         proof_ready = bool(ranked) and (anchored or coverage >= 0.45)
 
