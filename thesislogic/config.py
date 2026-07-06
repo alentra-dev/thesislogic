@@ -46,6 +46,12 @@ class Settings:
     generation_model: str = field(default_factory=lambda: _env("GENERATION_MODEL", ""))
     generation_api_key: str = field(default_factory=lambda: _env("GENERATION_API_KEY", ""))
     generation_max_tokens: int = field(default_factory=lambda: _env_int("GENERATION_MAX_TOKENS", 1600))
+    # Character budget for the evidence section of generation prompts. Local
+    # servers often run small per-slot context windows; the prompt builder
+    # trims spans to fit rather than triggering a backend 400.
+    generation_prompt_budget: int = field(default_factory=lambda: _env_int("GENERATION_PROMPT_BUDGET", 7000))
+    # One corrective retry when the proof gate rejects a live draft.
+    generation_gate_retries: int = field(default_factory=lambda: _env_int("GENERATION_GATE_RETRIES", 1))
     generation_timeout_seconds: int = field(default_factory=lambda: _env_int("GENERATION_TIMEOUT_SECONDS", 180))
     # Proof-gate posture: when false, live model output is recorded as a shadow
     # preview only and the deterministic answer is always returned.

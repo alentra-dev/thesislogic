@@ -208,7 +208,7 @@ class Retriever:
 
         exact = self._exact_lookup(db, question)
         aliases = self._alias_lookup(db, question)
-        lexical = self._lexical_search(db, question, limit=max_authorities * 3)
+        lexical = self._lexical_search(db, question, limit=max_authorities * 8)
         semantic = self._semantic_search(db, question, limit=max_authorities)
 
         merged: dict[str, dict] = {}
@@ -217,7 +217,26 @@ class Retriever:
                 existing = merged.get(authority["authority_id"])
                 if existing is None or authority["score"] > existing["score"]:
                     merged[authority["authority_id"]] = authority
-        ranked = sorted(merged.values(), key=lambda a: -a["score"])[:max_authorities]
+        pool = sorted(merged.values(), key=lambda a: -a["score"])
+        ranked = pool[:max_authorities]
+
+        # Doctrinal questions get guaranteed primary-written-law slots: in a
+        # large corpus, term-frequency matches from long opinions can crowd
+        # the controlling statute or rule out of the top ranks entirely.
+        if _DOCTRINAL.search(question):
+            in_top = sum(1 for a in ranked if a["authority_type"] in ("statute", "rule", "regulation"))
+            reserves = [a for a in pool[max_authorities:]
+                        if a["authority_type"] in ("statute", "rule", "regulation")]
+            while in_top < 2 and reserves:
+                # replace the lowest-ranked case with the best remaining statute
+                for idx in range(len(ranked) - 1, -1, -1):
+                    if ranked[idx]["authority_type"] not in ("statute", "rule", "regulation"):
+                        ranked[idx] = reserves.pop(0)
+                        in_top += 1
+                        break
+                else:
+                    break
+            ranked.sort(key=lambda a: -a["score"])
 
         spans = self._spans_for(db, [a["authority_id"] for a in ranked], question)
         allowed = [a["citation"] for a in ranked if a["citation"]]

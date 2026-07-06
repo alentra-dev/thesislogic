@@ -258,3 +258,40 @@ def test_password_change_and_admin_reset(tmp_path: Path):
     auth.create_session(db, "bob", "new-password-123", "m1", 3600, 3, 60)
     auth.admin_reset_password(db, "bob", "admin-set-password-9")
     auth.create_session(db, "bob", "admin-set-password-9", "m1", 3600, 3, 60)
+
+
+def test_gate_feedback_retry_recovers(pack):
+    """First draft hallucinates; corrective retry produces a grounded draft."""
+    class FlakyProvider:
+        name = "test"
+        calls = 0
+
+        def generate(self, system, prompt, max_tokens=1600):
+            FlakyProvider.calls += 1
+            if FlakyProvider.calls == 1:
+                return GenerationResult(text="See 999 U.S. 999 (fabricated).",
+                                        provider="test", model="t", live=True)
+            assert "REJECTED" in prompt and "999 U.S. 999" in prompt
+            return GenerationResult(text="The presumed amount governs. See 915 S.W.2d 372.",
+                                    provider="test", model="t", live=True)
+
+        def health(self):
+            return {"provider": "test", "ready": True}
+
+    settings = Settings()
+    settings.prefer_live_output = True
+    settings.generation_gate_retries = 1
+    result = workflows.research("child support presumed amount 915 S.W.2d 372", pack,
+                                Retriever(pack), FlakyProvider(), settings)
+    assert result.mode == "live"
+    assert result.generation["attempts"] == 2
+    assert result.generation["retry_feedback"]
+
+
+def test_generation_prompt_respects_budget(pack):
+    from thesislogic.workflows import _generation_prompt
+    evidence = Retriever(pack).retrieve("child support presumed amount")
+    _, small = _generation_prompt(evidence, pack, "task", budget=200)
+    _, large = _generation_prompt(evidence, pack, "task", budget=20000)
+    assert len(small) < len(large) or evidence.spans == []
+    assert "ALLOWED CITATIONS" in small
