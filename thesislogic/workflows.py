@@ -53,29 +53,74 @@ class WorkflowResult:
 
 # ---------------------------------------------------------------- research
 
+_TYPE_SECTIONS = [
+    (("statute", "regulation"), "Governing Statutes"),
+    (("rule",), "Court Rules"),
+    (("case",), "Case Authority"),
+    (("ethics_opinion",), "Ethics Opinions"),
+    (("secondary",), "Secondary Sources"),
+]
+
+_SPAN_LABEL = {"holding": "Holding", "rule_statement": "Rule", "procedural": "Procedure",
+               "standard_of_review": "Standard of review", "remedy": "Remedy",
+               "discussion": "Discussion"}
+
+
+def _verification_footer(mode: str, proof: dict, evidence: EvidencePackage, pack: Pack) -> str:
+    if mode == "live" and proof:
+        n = len(proof.get("verified_citations", []))
+        return (f"\n\n**Citation integrity** — {n} citation{'s' if n != 1 else ''} in this answer "
+                f"verified against the {pack.name} authority index; unverified citations are "
+                "structurally blocked from reaching you.")
+    return (f"\n\n**Citation integrity** — every authority above was drawn directly from the "
+            f"validated {pack.name} authority index ({len(evidence.authorities)} retrieved for "
+            "this question); nothing was generated from model memory.")
+
+
 def _deterministic_memo(evidence: EvidencePackage, pack: Pack) -> str:
-    lines = [f"# Research Memo — {pack.jurisdiction}", "", f"**Question:** {evidence.question}", ""]
+    lines = [f"# Research Memorandum — {pack.jurisdiction}", "",
+             f"**Question Presented:** {evidence.question}", ""]
     if evidence.practice_areas:
-        lines.append(f"**Practice area signals:** {', '.join(evidence.practice_areas)}")
-        lines.append("")
+        lines += [f"**Practice area:** {', '.join(evidence.practice_areas)}", ""]
     if not evidence.authorities:
-        lines += ["## Authorities", "", proofgate.DECLINE_LANGUAGE, ""]
+        lines += ["## Brief Answer", "", proofgate.DECLINE_LANGUAGE, "",
+                  "Consider rephrasing with doctrinal terms, a citation, or a case name — or "
+                  "confirm the relevant sources are loaded in this jurisdiction pack.", ""]
     else:
-        lines += ["## Authorities", ""]
         spans_by_authority: dict[str, list[dict]] = {}
         for span in evidence.spans:
             spans_by_authority.setdefault(span["authority_id"], []).append(span)
-        for authority in evidence.authorities:
-            header = f"### {authority['title'] or authority['citation']}"
-            meta = ", ".join(filter(None, [authority["citation"], authority["court"],
-                                           str(authority["year"] or "")]))
-            lines += [header, f"*{meta}* — matched via {authority['match_basis']}", ""]
-            for span in spans_by_authority.get(authority["authority_id"], [])[:3]:
-                lines.append(f"- ({span['span_type']}) {span['span_text']}")
+
+        def render_authority(authority: dict) -> None:
+            meta = ", ".join(filter(None, [authority["court"], str(authority["year"] or "")]))
+            lines.append(f"### {authority['citation']} — {authority['title']}")
+            if meta:
+                lines.append(f"*{meta}*")
             lines.append("")
-        lines += ["## Synthesis", "",
-                  "The authorities above are the validated support retrieved for this question. "
-                  "Propositions not supported by a quoted span above are intentionally omitted.", ""]
+            for span in spans_by_authority.get(authority["authority_id"], [])[:3]:
+                label = _SPAN_LABEL.get(span["span_type"], span["span_type"].title())
+                lines.append(f"> “{span['span_text'].strip()}”")
+                lines.append(f"> — *{label}*")
+                lines.append("")
+
+        rendered: set[str] = set()
+        for types, heading in _TYPE_SECTIONS:
+            group = [a for a in evidence.authorities if a["authority_type"] in types]
+            if not group:
+                continue
+            lines += [f"## {heading}", ""]
+            for authority in group:
+                render_authority(authority)
+                rendered.add(authority["authority_id"])
+        leftovers = [a for a in evidence.authorities if a["authority_id"] not in rendered]
+        if leftovers:
+            lines += ["## Other Authorities", ""]
+            for authority in leftovers:
+                render_authority(authority)
+        lines += ["## Method", "",
+                  "This memorandum presents the validated authorities and their support-eligible "
+                  "language verbatim. Propositions without a quoted basis above are intentionally "
+                  "omitted rather than inferred.", ""]
     if pack.disclaimer:
         lines += ["---", pack.disclaimer]
     return "\n".join(lines)
@@ -188,6 +233,22 @@ def _try_live(deterministic: str, evidence: EvidencePackage, pack: Pack,
     return deterministic, "deterministic", (proof.to_dict() if proof else {}), generation_meta
 
 
+_RESEARCH_TASK = (
+    "Write a formal legal research memorandum in markdown with exactly these sections:\n"
+    "## Question Presented — restate the question in one precise sentence.\n"
+    "## Brief Answer — answer directly in two to four sentences, citing the strongest "
+    "authority or authorities.\n"
+    "## Governing Law — statutes and rules first: quote their operative language verbatim "
+    "in quotation marks with the citation; then the leading cases and their holdings.\n"
+    "## Application — apply the law to the question. Synthesize across the authorities: "
+    "explain how they fit together, which controls, and any tension between them.\n"
+    "## Practice Notes — required findings, procedural steps, and deadlines the "
+    "authorities reveal (only if the evidence shows them).\n"
+    "## Unresolved Points — what the provided authorities do not establish.\n"
+    "Use EVERY relevant allowed authority, not just one — attorneys expect complete "
+    "support. Write in precise, confident, plain professional prose; no filler.")
+
+
 def research(question: str, pack: Pack, retriever: Retriever,
              provider: GenerationProvider, settings: Settings,
              matter_context: str = "") -> WorkflowResult:
@@ -195,9 +256,8 @@ def research(question: str, pack: Pack, retriever: Retriever,
     deterministic = _deterministic_memo(evidence, pack)
     answer, mode, proof, generation = _try_live(
         deterministic, evidence, pack, provider, settings,
-        task="Write a concise research memo answering the question using only the evidence package. "
-             "Structure: Question Presented, Short Answer, Analysis (cite spans), Unresolved Points.",
-        matter_context=matter_context)
+        task=_RESEARCH_TASK, matter_context=matter_context)
+    answer += _verification_footer(mode, proof, evidence, pack)
     return WorkflowResult("research", answer, mode, evidence.allowed_citations,
                           proof, generation, evidence.to_dict())
 
@@ -352,9 +412,15 @@ def draft_document(instructions: str, document_type: str, pack: Pack, retriever:
     deterministic = "\n".join(skeleton)
     answer, mode, proof, generation = _try_live(
         deterministic, evidence, pack, provider, settings,
-        task=f"Draft a {document_type or 'legal document'} per the instructions. Anchor every legal "
-             "proposition to an allowed citation; leave [BRACKETED PLACEHOLDERS] for unknown facts.",
+        task=(f"Draft a filing-quality {document_type or 'legal document'} per the instructions, "
+              "in markdown. Include: a caption placeholder block, an introduction stating the "
+              "relief sought, numbered paragraphs, a section quoting the governing standard with "
+              "citations, argument sections under clear headings, a prayer for relief, and a "
+              "signature block placeholder. Anchor every legal proposition to an allowed "
+              "citation. Use [BRACKETED PLACEHOLDERS] for every unknown fact — never invent "
+              "names, dates, or amounts. Follow the firm style directives exactly."),
         style_directives=style_directives, matter_context=matter_context)
+    answer += _verification_footer(mode, proof, evidence, pack)
     return WorkflowResult("draft", answer, mode, evidence.allowed_citations,
                           proof, generation, evidence.to_dict(),
                           extras={"document_type": document_type})

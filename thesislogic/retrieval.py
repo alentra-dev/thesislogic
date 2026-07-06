@@ -178,9 +178,10 @@ class Retriever:
         return out
 
     def _spans_for(self, db: sqlite3.Connection, authority_ids: list[str],
-                   question: str, per_authority: int = 3) -> list[dict]:
+                   question: str, per_authority: int = 4) -> list[dict]:
         tokens = {t.lower() for t in _WORD.findall(question) if t.lower() not in _STOPWORDS}
         spans: list[dict] = []
+        seen_text: set[str] = set()
         for authority_id in authority_ids:
             rows = db.execute(
                 "SELECT * FROM spans WHERE authority_id = ? AND support_eligible = 1 "
@@ -191,7 +192,12 @@ class Retriever:
                 type_bonus = {"holding": 3, "rule_statement": 2}.get(row["span_type"], 0)
                 scored.append((overlap + type_bonus, row))
             scored.sort(key=lambda t: -t[0])
-            for score, row in scored[:per_authority]:
+            kept = 0
+            for score, row in scored:
+                fingerprint = re.sub(r"\W+", "", row["span_text"].lower())[:90]
+                if fingerprint in seen_text:
+                    continue
+                seen_text.add(fingerprint)
                 spans.append({
                     "span_id": row["span_id"],
                     "authority_id": row["authority_id"],
@@ -199,6 +205,9 @@ class Retriever:
                     "span_type": row["span_type"],
                     "relevance": score,
                 })
+                kept += 1
+                if kept >= per_authority:
+                    break
         return spans
 
     def retrieve(self, question: str, workflow: str = "research",

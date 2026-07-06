@@ -45,7 +45,7 @@ class Settings:
     generation_base_url: str = field(default_factory=lambda: _env("GENERATION_BASE_URL", "http://127.0.0.1:8080"))
     generation_model: str = field(default_factory=lambda: _env("GENERATION_MODEL", ""))
     generation_api_key: str = field(default_factory=lambda: _env("GENERATION_API_KEY", ""))
-    generation_max_tokens: int = field(default_factory=lambda: _env_int("GENERATION_MAX_TOKENS", 1600))
+    generation_max_tokens: int = field(default_factory=lambda: _env_int("GENERATION_MAX_TOKENS", 2400))
     # Character budget for the evidence section of generation prompts. Local
     # servers often run small per-slot context windows; the prompt builder
     # trims spans to fit rather than triggering a backend 400.
