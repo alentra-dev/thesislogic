@@ -25,8 +25,12 @@ speed of a modern AI workbench.
 4. **Local AI or cloud AI — your choice per deployment.**
    - `openai_compatible`: any local server speaking the OpenAI API (llama.cpp, Ollama, vLLM,
      LM Studio) — case data never leaves your hardware;
-   - `anthropic`: Claude via the official API for firms that prefer managed cloud models;
+   - `anthropic`: Claude via the official Anthropic API;
+   - `openai`: OpenAI models via api.openai.com;
+   - `gemini`: Google Gemini via the Generative Language API;
    - `none`: zero-model deterministic mode — every workflow still works.
+   Whatever the model, the proof gate, retrieval-confidence floor, and audit trail apply
+   identically — provider choice is a privacy/procurement decision, never a safety one.
 5. **Jurisdiction packs.** All jurisdiction-specific knowledge (authorities, citation formats,
    practice-area taxonomy, disclaimers, prompt overlays) lives in a data pack, not in code.
    Scaffold a pack for any US state (or any legal system) in minutes and load your own corpus.
@@ -50,10 +54,13 @@ thesislogic pack scaffold my-state --name "My State" --jurisdiction "My State"
 thesislogic pack build my-state
 
 # 2. choose your AI posture (fully optional — 'none' is a first-class mode)
-export THESISLOGIC_GENERATION_PROVIDER=openai_compatible   # llama.cpp / Ollama / vLLM
+export THESISLOGIC_GENERATION_PROVIDER=openai_compatible   # llama.cpp / Ollama / vLLM (local)
 export THESISLOGIC_GENERATION_BASE_URL=http://127.0.0.1:8080
 export THESISLOGIC_GENERATION_MODEL=your-model
-# or: THESISLOGIC_GENERATION_PROVIDER=anthropic  + ANTHROPIC_API_KEY (pip install 'thesislogic[anthropic]')
+# cloud alternatives:
+#   THESISLOGIC_GENERATION_PROVIDER=anthropic + ANTHROPIC_API_KEY  (pip install 'thesislogic[anthropic]')
+#   THESISLOGIC_GENERATION_PROVIDER=openai    + OPENAI_API_KEY
+#   THESISLOGIC_GENERATION_PROVIDER=gemini    + GEMINI_API_KEY
 
 # 3. run
 thesislogic doctor      # verify packs, providers, OCR tooling
@@ -67,26 +74,36 @@ Register the first user from the login screen — it automatically becomes the a
 - [docs/adoption-guide.md](docs/adoption-guide.md) — **start here**: migrate your jurisdiction(s),
   practice area(s), and firm style into your own installation
 - [docs/architecture.md](docs/architecture.md) — system design and the proof-gate pipeline
-- [docs/deployment.md](docs/deployment.md) — production deployment (systemd, local models, HTTPS)
+- [docs/deployment.md](docs/deployment.md) — production deployment (systemd, local models, cloud APIs, HTTPS)
 - [docs/responsible-ai.md](docs/responsible-ai.md) — best practices for AI in regulated legal work
+- [docs/validation-prompts.md](docs/validation-prompts.md) — the 22-check test suite to run before go-live
+  and after every corpus refresh
+- [CHANGELOG.md](CHANGELOG.md) — release history
 
 ## Workflows
 
 | Workflow | Path | AI involvement |
 |---|---|---|
-| Research memo | question → evidence package → memo | deterministic memo always; live model only if proof gate passes |
-| Draft document | instructions + firm style + authority anchors | same proof-gated promotion |
+| Research memo | question → evidence package → full memorandum (Question Presented / Brief Answer / Governing Law / Application / Practice Notes / Unresolved Points) | deterministic memo always; live model only if the proof gate passes; one corrective retry on gate failure |
+| Draft document | instructions + firm style + authority anchors → filing-shaped draft | same proof-gated promotion |
 | Summarize | frequency-ranked extractive summary | none |
 | Chronology | deterministic date extraction + sort | none |
 | Compare | deadlines / governing law / dates / amounts | none |
 | Privilege review | conservative lexical indicators, review-only | none |
+
+Every research and draft answer carries a **citation-integrity statement** (how many citations
+were verified against the index), and a **retrieval-confidence floor** withholds generation
+entirely when the corpus has nothing responsive — the system says so instead of dressing up
+weak evidence. Users manage their own passwords in the UI; admins can reset via
+`thesislogic user passwd`.
 
 ## Requirements
 
 - Python 3.11+
 - Optional for PDF/OCR intake: `poppler-utils` (pdftotext), `ocrmypdf`, `tesseract-ocr`
 - Optional for local AI: any OpenAI-compatible model server
-- Optional for cloud AI: `pip install 'thesislogic[anthropic]'` + `ANTHROPIC_API_KEY`
+- Optional for cloud AI: an API key for Anthropic (`pip install 'thesislogic[anthropic]'`),
+  OpenAI, or Google Gemini — the OpenAI and Gemini providers need no extra packages
 
 ## Author & License
 

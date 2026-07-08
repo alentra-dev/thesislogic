@@ -65,17 +65,43 @@ Sizing guidance: a 20–30B-parameter instruct model in Q4–Q6 quantization on 
 unified-memory box comfortably serves a small firm. Start conservative; the proof gate makes
 model quality a latency/fluency question, not a correctness one.
 
-## Cloud AI (Anthropic)
+## Cloud AI (Anthropic, OpenAI, or Google Gemini)
+
+**Anthropic (Claude)** — uses the official SDK (optional extra):
 
 ```bash
 pip install 'thesislogic[anthropic]'
 export THESISLOGIC_GENERATION_PROVIDER=anthropic
-export THESISLOGIC_GENERATION_MODEL=claude-opus-4-8
+export THESISLOGIC_GENERATION_MODEL=claude-opus-4-8     # default
 export ANTHROPIC_API_KEY=...
 ```
 
-Review your professional-responsibility obligations for confidentiality and your provider's data
-processing terms before sending client material to any cloud API. Shadow mode
+**OpenAI** — no extra package (plain HTTPS):
+
+```bash
+export THESISLOGIC_GENERATION_PROVIDER=openai
+export THESISLOGIC_GENERATION_MODEL=gpt-4o              # default; set your preferred model
+export OPENAI_API_KEY=...                               # or THESISLOGIC_GENERATION_API_KEY
+```
+
+OpenAI can also serve embeddings: `THESISLOGIC_EMBEDDING_PROVIDER=openai`
+(default model `text-embedding-3-small`).
+
+**Google Gemini** — no extra package (plain HTTPS):
+
+```bash
+export THESISLOGIC_GENERATION_PROVIDER=gemini
+export THESISLOGIC_GENERATION_MODEL=gemini-2.5-pro      # default
+export GEMINI_API_KEY=...                               # or GOOGLE_API_KEY / THESISLOGIC_GENERATION_API_KEY
+```
+
+Run `thesislogic doctor` after configuring any provider — it performs a live health probe
+against the vendor API before attorneys ever see the deployment.
+
+Whichever vendor you choose, the safety posture is identical: the proof gate, the
+retrieval-confidence floor, and the audit trail treat every model as untrusted. Review your
+professional-responsibility obligations for confidentiality and your provider's data-processing
+terms before sending client material to any cloud API. Shadow mode
 (`THESISLOGIC_PREFER_LIVE_OUTPUT=false`) lets you evaluate cloud output without it ever reaching
 an attorney-facing answer.
 

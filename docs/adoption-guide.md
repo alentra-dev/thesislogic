@@ -122,8 +122,13 @@ is the sweet spot; overlapping keywords are fine — areas are ranked, not exclu
 | Posture | Configuration | When |
 |---|---|---|
 | **Local AI** | `GENERATION_PROVIDER=openai_compatible` + a llama.cpp/Ollama/vLLM server | client confidentiality requires data on-premises |
-| **Cloud AI** | `GENERATION_PROVIDER=anthropic` + `ANTHROPIC_API_KEY` | firm accepts a cloud DPA; no GPU hardware |
+| **Cloud AI — Claude** | `GENERATION_PROVIDER=anthropic` + `ANTHROPIC_API_KEY` | firm accepts a cloud DPA; no GPU hardware |
+| **Cloud AI — OpenAI** | `GENERATION_PROVIDER=openai` + `OPENAI_API_KEY` | same, OpenAI procurement |
+| **Cloud AI — Gemini** | `GENERATION_PROVIDER=gemini` + `GEMINI_API_KEY` | same, Google procurement |
 | **No AI** | `GENERATION_PROVIDER=none` | deterministic-only environments |
+
+The proof gate, retrieval-confidence floor, and audit trail behave identically under every
+posture — switching providers never changes the safety guarantees, only who runs the model.
 
 Two additional dials:
 

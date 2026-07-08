@@ -317,3 +317,52 @@ def test_low_coverage_question_withholds_generation(pack):
     assert result.generation["state"] in ("skipped_low_evidence_confidence", "skipped_no_evidence")
     if result.evidence["authorities"]:
         assert "Retrieval confidence: LOW" in result.answer
+
+
+def test_cloud_provider_factory_selection():
+    from thesislogic.providers import build_generation_provider, build_embedding_provider
+
+    s = Settings()
+    s.generation_provider = "openai"
+    s.generation_api_key = "sk-test"
+    p = build_generation_provider(s)
+    assert p.base_url.startswith("https://api.openai.com")
+    assert p.model  # cloud OpenAI always has a model default
+
+    s2 = Settings()
+    s2.generation_provider = "gemini"
+    s2.generation_api_key = "g-test"
+    g = build_generation_provider(s2)
+    assert g.name == "gemini" and g.model
+
+    s3 = Settings()
+    s3.generation_provider = "openai_compatible"
+    local = build_generation_provider(s3)
+    assert "127.0.0.1" in local.base_url  # local stays local
+
+    s4 = Settings()
+    s4.embedding_provider = "openai"
+    s4.embedding_api_key = "sk-test"
+    e = build_embedding_provider(s4)
+    assert e.base_url.startswith("https://api.openai.com") and e.model
+
+
+def test_gemini_provider_parses_response(monkeypatch):
+    from thesislogic.providers import gemini_provider
+
+    class FakeResp:
+        status_code = 200
+        def raise_for_status(self): pass
+        def json(self):
+            return {"candidates": [{"content": {"parts": [{"text": "Grounded answer."}]}}],
+                    "usageMetadata": {"promptTokenCount": 12, "candidatesTokenCount": 4}}
+
+    monkeypatch.setattr(gemini_provider.httpx, "post", lambda *a, **k: FakeResp())
+    provider = gemini_provider.GeminiProvider(api_key="test-key")
+    result = provider.generate("system", "prompt")
+    assert result.live and result.text == "Grounded answer."
+    assert result.usage["output_tokens"] == 4
+    # missing key reports an error instead of raising
+    no_key = gemini_provider.GeminiProvider.__new__(gemini_provider.GeminiProvider)
+    no_key.model, no_key.api_key, no_key.timeout = "m", "", 10
+    assert "missing API key" in no_key.generate("s", "p").error
